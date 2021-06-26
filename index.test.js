@@ -6,13 +6,14 @@ const windows = process.platform === "win32";
 
 // Action input variables
 const defaultInputs = {
+    test_value: ".",
     branch: "HEAD",
     tag_prefix: "v",
     major_pattern: "(MAJOR)",
     minor_pattern: "(MINOR)",
     format: "${major}.${minor}.${patch}",
     short_tags: true,
-    bump_each_commit: false
+    use_test_value: false
 };
 
 // Creates a randomly named git repository and returns a function to execute commands in it
@@ -580,68 +581,87 @@ test('Tag prefix can include forward slash', () => {
 });
 
 test('[Use Branch Names] Commit messages do not affect version', () => {
-    const repo = createTestRepo({ tag_prefix: '', use_branch_names: true}); // 0.0.0
-
-    repo.makeCommit('Initial Commit'); // 0.0.1+0
-    expect(repo.runAction()).toMatch('Version is 0.0.1+0');
-
-    repo.makeCommit('Second Commit (MINOR)'); // 0.0.1+1
-    expect(repo.runAction()).toMatch('Version is 0.0.1+1');
-
-    repo.makeCommit('Second Commit (MAJOR)'); // 0.0.1+2
-    expect(repo.runAction()).toMatch('Version is 0.0.1+2');
-
-    repo.clean();
-});
-
-test('[Use Branch Names] Commit messages do not affect version', () => {
-    const repo = createTestRepo({ tag_prefix: '', use_branch_names: true, major_pattern: "major/", minor_pattern: "minor/"}); // 0.0.0
-
+    const repo = createTestRepo({ tag_prefix: '', use_test_value: true, test_value: 'some_patch', major_pattern: "major/", minor_pattern: "minor/"}); // 0.0.0
     repo.makeCommit('Initial Commit');
     repo.exec('git tag 1.2.3');
-    repo.exec('git switch -c some_patch');
+
     repo.makeCommit('First commit on patch branch');
     expect(repo.runAction()).toMatch('Version is 1.2.4+0');
 
-    repo.exec('git switch -c major/banger');
-    repo.makeCommit('First commit on major branch');
-    expect(repo.runAction()).toMatch('Version is 2.0.0+1');
+    const repo2 = createTestRepo({ tag_prefix: '', use_test_value: true, test_value: 'major/banger', major_pattern: "major/", minor_pattern: "minor/"}); // 0.0.0
+    repo2.makeCommit('Initial Commit');
+    repo2.exec('git tag 1.2.3');
 
-    repo.exec('git switch -c minor/foo');
-    repo.makeCommit('First commit on minor branch');
-    expect(repo.runAction()).toMatch('Version is 1.3.0+2');
+    repo2.makeCommit('First commit on major branch');
+    expect(repo2.runAction()).toMatch('Version is 2.0.0+0');
+
+    const repo3 = createTestRepo({ tag_prefix: '', use_test_value: true, test_value: 'minor/problem', major_pattern: "major/", minor_pattern: "minor/"}); // 0.0.0
+    repo3.makeCommit('Initial Commit');
+    repo3.exec('git tag 1.2.3');
+
+    repo3.makeCommit('First commit on minor branch');
+    expect(repo3.runAction()).toMatch('Version is 1.3.0+0');
 
     repo.clean();
+    repo2.clean();
+    repo3.clean();
 });
 
 test('[Use Branch Names] regex works as expected', () => {
-    const repo = createTestRepo({ tag_prefix: '', use_branch_names: true, major_pattern: "/^(major|breaking)//", minor_pattern: "/^(minor|feature|feat)//"}); // 0.0.0
-
+    const repo = createTestRepo({ tag_prefix: '', use_test_value: true, test_value: 'some_patch', major_pattern: "/^(major|breaking)/", minor_pattern: "/^(minor|feature|feat)//"}); // 0.0.0
     repo.makeCommit('Initial Commit');
     repo.exec('git tag 1.2.3');
-    repo.exec('git switch -c some_patch');
+
     repo.makeCommit('First commit on patch branch');
     expect(repo.runAction()).toMatch('Version is 1.2.4+0');
 
-    repo.exec('git switch -c major/banger');
-    repo.makeCommit('First commit on major branch');
-    expect(repo.runAction()).toMatch('Version is 2.0.0');
+    const repo2 = createTestRepo({ tag_prefix: '', use_test_value: true, test_value: 'major/banger', major_pattern: "/^(major|breaking)/", minor_pattern: "/^(minor|feature|feat)//"}); // 0.0.0
+    repo2.makeCommit('Initial Commit');
+    repo2.exec('git tag 1.2.3');
 
-    repo.exec('git switch -c minor/foo');
-    repo.makeCommit('another commit');
-    expect(repo.runAction()).toMatch('Version is 1.3.0');
+    repo2.makeCommit('First commit on major branch');
+    expect(repo2.runAction()).toMatch('Version is 2.0.0+0');
 
-    repo.exec('git switch -c feature/foo');
-    repo.makeCommit('another commit');
-    expect(repo.runAction()).toMatch('Version is 1.3.0');
+    const repo3 = createTestRepo({ tag_prefix: '', use_test_value: true, test_value: 'minor/problem', major_pattern: "/^(major|breaking)/", minor_pattern: "/^(minor|feature|feat)//"}); // 0.0.0
+    repo3.makeCommit('Initial Commit');
+    repo3.exec('git tag 1.2.3');
 
-    repo.exec('git switch -c feat/foo');
-    repo.makeCommit('another commit');
-    expect(repo.runAction()).toMatch('Version is 1.3.0');
+    repo3.makeCommit('First commit on minor branch');
+    expect(repo3.runAction()).toMatch('Version is 1.3.0+0');
 
-    repo.exec('git switch -c breaking/foo');
-    repo.makeCommit('another commit');
-    expect(repo.runAction()).toMatch('Version is 2.0.0');
+    const repo4 = createTestRepo({ tag_prefix: '', use_test_value: true, test_value: 'breaking/banger', major_pattern: "/^(major|breaking)/", minor_pattern: "/^(minor|feature|feat)//"}); // 0.0.0
+    repo4.makeCommit('Initial Commit');
+    repo4.exec('git tag 1.2.3');
+
+    repo4.makeCommit('First commit on major branch');
+    expect(repo4.runAction()).toMatch('Version is 2.0.0+0');
+
+    const repo5 = createTestRepo({ tag_prefix: '', use_test_value: true, test_value: 'feature/problem', major_pattern: "/^(major|breaking)/", minor_pattern: "/^(minor|feature|feat)//"}); // 0.0.0
+    repo5.makeCommit('Initial Commit');
+    repo5.exec('git tag 1.2.3');
+
+    repo5.makeCommit('First commit on minor branch');
+    expect(repo5.runAction()).toMatch('Version is 1.3.0+0');
+
+    const repo6 = createTestRepo({ tag_prefix: '', use_test_value: true, test_value: 'feat/problem', major_pattern: "/^(major|breaking)/", minor_pattern: "/^(minor|feature|feat)//"}); // 0.0.0
+    repo6.makeCommit('Initial Commit');
+    repo6.exec('git tag 1.2.3');
+
+    repo6.makeCommit('First commit on minor branch');
+    expect(repo6.runAction()).toMatch('Version is 1.3.0+0');
+
+    const repo7 = createTestRepo({ tag_prefix: '', use_test_value: true, test_value: 'team/feat/bar', major_pattern: "/^(major|breaking)/", minor_pattern: "/^(minor|feature|feat)//"}); // 0.0.0
+    repo7.makeCommit('Initial Commit');
+    repo7.exec('git tag 1.2.3');
+
+    repo7.makeCommit('First commit on patch branch');
+    expect(repo7.runAction()).toMatch('Version is 1.2.4+0');
 
     repo.clean();
+    repo2.clean();
+    repo3.clean();
+    repo4.clean();
+    repo5.clean();
+    repo6.clean();
+    repo7.clean();
 });

@@ -122,7 +122,7 @@ async function run() {
     let versionBranch = core.getInput('branch', { required: true });
     const majorPattern = createMatchTest(core.getInput('major_pattern', { required: true }));
     const minorPattern = createMatchTest(core.getInput('minor_pattern', { required: true }));
-    const testValue = createMatchTest(core.getInput('test_value', { required: true }));
+    const testValue = core.getInput('test_value', { required: true });
     const changePath = core.getInput('change_path') || '';
 
     const onHead = versionBranch === 'HEAD';
