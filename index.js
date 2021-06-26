@@ -6,10 +6,8 @@ const tagPrefix = core.getInput('tag_prefix') || '';
 const namespace = core.getInput('namespace') || '';
 const shortTags = core.getInput('short_tags') === 'true';
 const bumpEachCommit = core.getInput('bump_each_commit') === 'true';
-const useTestValue = core.getInput('use_test_value') === 'true';
-core.warning(`useTestValue: ${useTestValue}`);
-core.info(`useTestValue: ${useTestValue}`);
-core.error(`useTestValue: ${useTestValue}`);
+const rawUseTestValue = core.getInput('use_test_value');
+const useTestValue = rawUseTestValue === 'true';
 
 const cmd = async (command, ...args) => {
   let output = '', errors = '';
@@ -242,6 +240,10 @@ async function run() {
       increment = history.length - 1;
       setOutput(major, minor, patch, increment, changed, versionBranch, namespace);
       return;
+    } else {
+      core.warning(`useTestValue: ${rawUseTestValue} ${useTestValue}`);
+      core.info(`useTestValue: ${rawUseTestValue} ${useTestValue}`);
+      core.error(`useTestValue: ${rawUseTestValue} ${useTestValue}`);
     }
 
     // Discover the change time from the history log by finding the oldest log
