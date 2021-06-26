@@ -6,7 +6,7 @@ const tagPrefix = core.getInput('tag_prefix') || '';
 const namespace = core.getInput('namespace') || '';
 const shortTags = core.getInput('short_tags') === 'true';
 const bumpEachCommit = core.getInput('bump_each_commit') === 'true';
-const useBranchNames = core.getInput('use_branch_names') === 'true';
+const useTestValue = core.getInput('use_test_value') === 'true';
 
 const cmd = async (command, ...args) => {
   let output = '', errors = '';
@@ -122,10 +122,10 @@ async function run() {
     let versionBranch = core.getInput('branch', { required: true });
     const majorPattern = createMatchTest(core.getInput('major_pattern', { required: true }));
     const minorPattern = createMatchTest(core.getInput('minor_pattern', { required: true }));
+    const testValue = createMatchTest(core.getInput('test_value', { required: true }));
     const changePath = core.getInput('change_path') || '';
 
     const onHead = versionBranch === 'HEAD';
-    const branch = (await cmd('git', 'branch', '--show-current')).trim();
 
     if (onHead) {
       versionBranch = (await cmd('git', 'rev-parse', 'HEAD')).trim();
@@ -222,13 +222,13 @@ async function run() {
       return;
     }
 
-    if (useBranchNames) {
-      core.warning(`Branch name: ${branch} -- major pattern ${majorPattern(branch)} -- minor pattern ${minorPattern(branch)}`);
-      if (majorPattern(branch)) {
+    if (useTestValue) {
+      core.warning(`Test Value: ${testValue} -- major pattern ${majorPattern(testValue)} -- minor pattern ${minorPattern(testValue)}`);
+      if (majorPattern(testValue)) {
         major++;
         minor = 0;
         patch = 0;
-      } else if (minorPattern(branch)) {
+      } else if (minorPattern(testValue)) {
         minor++;
         patch = 0;
       } else {

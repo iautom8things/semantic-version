@@ -1,4 +1,4 @@
-![Build](https://github.com/PaulHatch/semantic-version/workflows/Build/badge.svg)
+![Build](https://github.com/iautom8things/semantic-version/workflows/Build/badge.svg)
 
 # Git-Based Semantic Versioning
 
@@ -71,7 +71,7 @@ it will be given the new version if the build were to be retriggered, for exampl
 <!-- start usage -->
 
 ```yaml
-- uses: paulhatch/semantic-version@v4.0.2
+- uses: iautom8things/semantic-version@v4.0.5
   with:
     # The prefix to use to identify tags
     tag_prefix: "v"
@@ -92,8 +92,10 @@ it will be given the new version if the build were to be retriggered, for exampl
     short_tags: true
     # If this is set to true, *every* commit will be treated as a new version.
     bump_each_commit: false
-    # If this is set to true, patterns will be applied to the branch name instead of git commit messages
-    use_branch_names: false
+    # If this is set to true, patterns will be applied to the `test_value` instead of git commit messages
+    use_test_value: false
+    # test major/minor patterns against this value.  This example shows how you can test against a PR's branch name
+    test_value: ${{ github.event.pull_request.head.ref }}
 ```
 
 ## Outputs 
@@ -135,12 +137,12 @@ like `v1.2.3+0-db` could be configured like this:
 ```yaml
 - name: Application Version
   id: version
-  uses: paulhatch/semantic-version@v4.0.2
+  uses: iautom8things/semantic-version@v4.0.5
   with:
     change_path: "src/service"
 - name: Database Version
   id: db-version
-  uses: paulhatch/semantic-version@v4.0.2
+  uses: iatuom8things/semantic-version@v4.0.5
   with:
     major_pattern: "(MAJOR-DB)"
     minor_pattern: "(MINOR-DB)"

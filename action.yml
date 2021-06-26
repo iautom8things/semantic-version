@@ -4,6 +4,10 @@ branding:
   icon: "layers"
   color: "blue"
 inputs:
+  test_value:
+    description: "Set to specify what patterns are applied against"
+    required: true
+    default: ""
   branch:
     description: "Set to specify a specific branch, default is the current HEAD"
     required: true
