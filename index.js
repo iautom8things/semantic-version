@@ -8,6 +8,8 @@ const shortTags = core.getInput('short_tags') === 'true';
 const bumpEachCommit = core.getInput('bump_each_commit') === 'true';
 const useTestValue = core.getInput('use_test_value') === 'true';
 core.warning(`useTestValue: ${useTestValue}`);
+core.info(`useTestValue: ${useTestValue}`);
+core.error(`useTestValue: ${useTestValue}`);
 
 const cmd = async (command, ...args) => {
   let output = '', errors = '';
@@ -225,6 +227,8 @@ async function run() {
 
     if (useTestValue) {
       core.warning(`Test Value: ${testValue} -- major pattern ${majorPattern(testValue)} -- minor pattern ${minorPattern(testValue)}`);
+      core.info(`Test Value: ${testValue} -- major pattern ${majorPattern(testValue)} -- minor pattern ${minorPattern(testValue)}`);
+      core.error(`Test Value: ${testValue} -- major pattern ${majorPattern(testValue)} -- minor pattern ${minorPattern(testValue)}`);
       if (majorPattern(testValue)) {
         major++;
         minor = 0;
