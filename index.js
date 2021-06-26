@@ -7,6 +7,7 @@ const namespace = core.getInput('namespace') || '';
 const shortTags = core.getInput('short_tags') === 'true';
 const bumpEachCommit = core.getInput('bump_each_commit') === 'true';
 const useTestValue = core.getInput('use_test_value') === 'true';
+core.warning(`useTestValue: ${useTestValue}`);
 
 const cmd = async (command, ...args) => {
   let output = '', errors = '';
