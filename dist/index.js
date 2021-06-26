@@ -1063,6 +1063,7 @@ const tagPrefix = core.getInput('tag_prefix') || '';
 const namespace = core.getInput('namespace') || '';
 const shortTags = core.getInput('short_tags') === 'true';
 const bumpEachCommit = core.getInput('bump_each_commit') === 'true';
+const useBranchNames = core.getInput('use_branch_names') === 'true';
 
 const cmd = async (command, ...args) => {
   let output = '', errors = '';
@@ -1175,13 +1176,16 @@ const createMatchTest = (pattern) => {
 
 async function run() {
   try {
-    let branch = core.getInput('branch', { required: true });
+    let versionBranch = core.getInput('branch', { required: true });
     const majorPattern = createMatchTest(core.getInput('major_pattern', { required: true }));
     const minorPattern = createMatchTest(core.getInput('minor_pattern', { required: true }));
     const changePath = core.getInput('change_path') || '';
 
-    if (branch === 'HEAD') {
-      branch = (await cmd('git', 'rev-parse', 'HEAD')).trim();
+    const onHead = versionBranch === 'HEAD';
+    const branch = (await cmd('git', 'rev-parse', '--abbrev-ref', 'HEAD')).trim();
+
+    if (onHead) {
+      versionBranch = (await cmd('git', 'rev-parse', 'HEAD')).trim();
     }
 
     const versionPattern = shortTags ? '*[0-9.]' : '*[0-9].*[0-9].*[0-9]'
@@ -1193,12 +1197,12 @@ async function run() {
 
     if (lastCommitAll === '') {
       // empty repo
-      setOutput('0', '0', '0', '0', changed, branch, namespace);
+      setOutput('0', '0', '0', '0', changed, versionBranch, namespace);
       return;
     }
 
     let currentTag = (await cmd(
-      `git tag --points-at ${branch} ${releasePattern}`
+      `git tag --points-at ${versionBranch} ${releasePattern}`
     )).trim();
 
     let tag = '';
@@ -1209,7 +1213,7 @@ async function run() {
         `--tags`,
         `--abbrev=0`,
         `--match=${releasePattern}`,
-        `${branch}~1`
+        `${versionBranch}~1`
       )).trim();
     }
     catch (err) {
@@ -1227,11 +1231,11 @@ async function run() {
       // parse the version tag
       [major, minor, patch] = parseVersion(tag);
 
-      root = await cmd('git', `merge-base`, tag, branch);
+      root = await cmd('git', `merge-base`, tag, versionBranch);
     }
     root = root.trim();
 
-    var logCommand = `git log --pretty="%s" --author-date-order ${(root === '' ? branch : `${root}..${branch}`)}`;
+    var logCommand = `git log --pretty="%s" --author-date-order ${(root === '' ? versionBranch : `${root}..${versionBranch}`)}`;
 
     if (changePath !== '') {
       logCommand += ` -- ${changePath}`;
@@ -1241,10 +1245,10 @@ async function run() {
 
     if (changePath !== '') {
       if (root === '') {
-        const changedFiles = await cmd(`git log --name-only --oneline ${branch} -- ${changePath}`);
+        const changedFiles = await cmd(`git log --name-only --oneline ${versionBranch} -- ${changePath}`);
         changed = changedFiles.length > 0;
       } else {
-        const changedFiles = await cmd(`git diff --name-only ${root}..${branch} -- ${changePath}`);
+        const changedFiles = await cmd(`git diff --name-only ${root}..${versionBranch} -- ${changePath}`);
         changed = changedFiles.length > 0;
       }
     }
@@ -1271,7 +1275,24 @@ async function run() {
         }
       });
 
-      setOutput(major, minor, patch, increment, changed, branch, namespace);
+      setOutput(major, minor, patch, increment, changed, versionBranch, namespace);
+      return;
+    }
+
+    if (useBranchNames) {
+      core.warning(`Branch name: ${branch} -- major pattern ${majorPattern(branch)} -- minor pattern ${minorPattern(branch)}`);
+      if (majorPattern(branch)) {
+        major++;
+        minor = 0;
+        patch = 0;
+      } else if (minorPattern(branch)) {
+        minor++;
+        patch = 0;
+      } else {
+        patch++;
+      }
+      increment = history.length - 1;
+      setOutput(major, minor, patch, increment, changed, versionBranch, namespace);
       return;
     }
 
@@ -1305,7 +1326,7 @@ async function run() {
       }
     }
 
-    setOutput(major, minor, patch, increment, changed, branch, namespace);
+    setOutput(major, minor, patch, increment, changed, versionBranch, namespace);
 
   } catch (error) {
     core.error(error);

@@ -578,3 +578,38 @@ test('Tag prefix can include forward slash', () => {
 
     repo.clean();
 });
+
+test('[Use Branch Names] Commit messages do not affect version', () => {
+    const repo = createTestRepo({ tag_prefix: '', use_branch_names: true}); // 0.0.0
+
+    repo.makeCommit('Initial Commit'); // 0.0.1+0
+    expect(repo.runAction()).toMatch('Version is 0.0.1+0');
+
+    repo.makeCommit('Second Commit (MINOR)'); // 0.0.1+1
+    expect(repo.runAction()).toMatch('Version is 0.0.1+1');
+
+    repo.makeCommit('Second Commit (MAJOR)'); // 0.0.1+2
+    expect(repo.runAction()).toMatch('Version is 0.0.1+2');
+
+    repo.clean();
+});
+
+test('[Use Branch Names] Commit messages do not affect version', () => {
+    const repo = createTestRepo({ tag_prefix: '', use_branch_names: true, major_pattern: "major/", minor_pattern: "minor/"}); // 0.0.0
+
+    repo.makeCommit('Initial Commit');
+    repo.exec('git tag 1.2.3');
+    repo.exec('git switch -c some_patch');
+    repo.makeCommit('First commit on patch branch');
+    expect(repo.runAction()).toMatch('Version is 1.2.4+0');
+
+    repo.exec('git switch -c major/banger');
+    repo.makeCommit('First commit on major branch');
+    expect(repo.runAction()).toMatch('Version is 2.0.0+1');
+
+    repo.exec('git switch -c minor/foo');
+    repo.makeCommit('First commit on minor branch');
+    expect(repo.runAction()).toMatch('Version is 1.3.0+2');
+
+    repo.clean();
+});

@@ -92,6 +92,8 @@ it will be given the new version if the build were to be retriggered, for exampl
     short_tags: true
     # If this is set to true, *every* commit will be treated as a new version.
     bump_each_commit: false
+    # If this is set to true, patterns will be applied to the branch name instead of git commit messages
+    use_branch_names: false
 ```
 
 ## Outputs 
