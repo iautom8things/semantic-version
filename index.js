@@ -125,7 +125,7 @@ async function run() {
     const changePath = core.getInput('change_path') || '';
 
     const onHead = versionBranch === 'HEAD';
-    const branch = (await cmd('git', 'rev-parse', '--abbrev-ref', 'HEAD')).trim();
+    const branch = (await cmd('git', 'branch', '--show-current')).trim();
 
     if (onHead) {
       versionBranch = (await cmd('git', 'rev-parse', 'HEAD')).trim();
