@@ -8,14 +8,14 @@ inputs:
     description: "Set to specify what patterns are applied against"
     required: true
     default: "."
+  use_test_value:
+    description: "Look at `test_value` to derive how the version is bumped, instead of commit messages"
+    required: true
+    default: "false"
   branch:
     description: "Set to specify a specific branch, default is the current HEAD"
     required: true
     default: "HEAD"
-  use_branch_names:
-    description: "Look at current branch name to derive how the version is bumped, instead of commit messages"
-    required: true
-    default: "false"
   tag_prefix:
     description: "The prefix to use to identify tags"
     required: false
