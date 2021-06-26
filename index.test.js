@@ -613,3 +613,35 @@ test('[Use Branch Names] Commit messages do not affect version', () => {
 
     repo.clean();
 });
+
+test('[Use Branch Names] regex works as expected', () => {
+    const repo = createTestRepo({ tag_prefix: '', use_branch_names: true, major_pattern: "/^(major|breaking)//", minor_pattern: "/^(minor|feature|feat)//"}); // 0.0.0
+
+    repo.makeCommit('Initial Commit');
+    repo.exec('git tag 1.2.3');
+    repo.exec('git switch -c some_patch');
+    repo.makeCommit('First commit on patch branch');
+    expect(repo.runAction()).toMatch('Version is 1.2.4+0');
+
+    repo.exec('git switch -c major/banger');
+    repo.makeCommit('First commit on major branch');
+    expect(repo.runAction()).toMatch('Version is 2.0.0');
+
+    repo.exec('git switch -c minor/foo');
+    repo.makeCommit('another commit');
+    expect(repo.runAction()).toMatch('Version is 1.3.0');
+
+    repo.exec('git switch -c feature/foo');
+    repo.makeCommit('another commit');
+    expect(repo.runAction()).toMatch('Version is 1.3.0');
+
+    repo.exec('git switch -c feat/foo');
+    repo.makeCommit('another commit');
+    expect(repo.runAction()).toMatch('Version is 1.3.0');
+
+    repo.exec('git switch -c breaking/foo');
+    repo.makeCommit('another commit');
+    expect(repo.runAction()).toMatch('Version is 2.0.0');
+
+    repo.clean();
+});
