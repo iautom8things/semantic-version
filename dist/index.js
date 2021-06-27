@@ -1063,7 +1063,10 @@ const tagPrefix = core.getInput('tag_prefix') || '';
 const namespace = core.getInput('namespace') || '';
 const shortTags = core.getInput('short_tags') === 'true';
 const bumpEachCommit = core.getInput('bump_each_commit') === 'true';
-const useBranchNames = core.getInput('use_branch_names') === 'true';
+const rawUseTestValue = core.getInput('use_test_value');
+const useTestValue = rawUseTestValue === 'true';
+core.info("hi1");
+core.info(`rawUseTestValue ${rawUseTestValue} not raw ${useTestValue}`);
 
 const cmd = async (command, ...args) => {
   let output = '', errors = '';
@@ -1119,7 +1122,14 @@ const setOutput = (major, minor, patch, increment, changed, branch, namespace) =
     core.info('No changes detected for this commit');
   }
 
-  core.info(`Version is ${major}.${minor}.${patch}+${increment}`);
+  const testValue2 = core.getInput('test_value', { required: true });
+  const rawUseTestValue2 = core.getInput('use_test_value');
+  const useTestValue2 = rawUseTestValue2 === 'true';
+  core.info(`Version is ${major}.${minor}.${patch}+${increment} ... rawUseTestValue ${rawUseTestValue2} not raw ${useTestValue2} :: ${testValue2}`);
+
+  core.info("hi2");
+  core.info(`rawUseTestValue ${rawUseTestValue2} not raw ${useTestValue2} :: ${testValue2}`);
+
   if (repository !== undefined && !namespace) {
     core.info(`To create a release for this version, go to https://github.com/${repository}/releases/new?tag=${tag}&target=${branch.split('/').reverse()[0]}`);
   }
@@ -1179,10 +1189,10 @@ async function run() {
     let versionBranch = core.getInput('branch', { required: true });
     const majorPattern = createMatchTest(core.getInput('major_pattern', { required: true }));
     const minorPattern = createMatchTest(core.getInput('minor_pattern', { required: true }));
+    const testValue = core.getInput('test_value', { required: true });
     const changePath = core.getInput('change_path') || '';
 
     const onHead = versionBranch === 'HEAD';
-    const branch = (await cmd('git', 'rev-parse', '--abbrev-ref', 'HEAD')).trim();
 
     if (onHead) {
       versionBranch = (await cmd('git', 'rev-parse', 'HEAD')).trim();
@@ -1279,17 +1289,20 @@ async function run() {
       return;
     }
 
-    if (useBranchNames) {
-      core.warning(`Branch name: ${branch} -- major pattern ${majorPattern(branch)} -- minor pattern ${minorPattern(branch)}`);
-      if (majorPattern(branch)) {
+    if (useTestValue) {
+      core.info(`Test Value: ${testValue} -- major pattern ${majorPattern(testValue)} -- minor pattern ${minorPattern(testValue)}`);
+      if (majorPattern(testValue)) {
         major++;
         minor = 0;
         patch = 0;
-      } else if (minorPattern(branch)) {
+        core.info(`bump major`)
+      } else if (minorPattern(testValue)) {
         minor++;
         patch = 0;
+        core.info(`bump minor`)
       } else {
         patch++;
+        core.info(`bump patch`)
       }
       increment = history.length - 1;
       setOutput(major, minor, patch, increment, changed, versionBranch, namespace);
