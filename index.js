@@ -8,6 +8,7 @@ const shortTags = core.getInput('short_tags') === 'true';
 const bumpEachCommit = core.getInput('bump_each_commit') === 'true';
 const rawUseTestValue = core.getInput('use_test_value');
 const useTestValue = rawUseTestValue === 'true';
+core.warning(`raw use: ${rawUseTestValue} parsed: ${useTestValue}`)
 
 const cmd = async (command, ...args) => {
   let output = '', errors = '';
@@ -237,13 +238,16 @@ async function run() {
         minor = 0;
         patch = 0;
         core.setOutput("major_true", true);
+        core.warning(`bump major`)
       } else if (minorPattern(testValue)) {
         minor++;
         patch = 0;
         core.setOutput("minor_true", true);
+        core.warning(`bump minor`)
       } else {
         patch++;
         core.setOutput("patch_true", true);
+        core.warning(`bump patch`)
       }
       increment = history.length - 1;
       setOutput(major, minor, patch, increment, changed, versionBranch, namespace);

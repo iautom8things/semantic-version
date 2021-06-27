@@ -26,4 +26,9 @@ jobs:
         run: npm run package
       - name: Run Action
         uses: ./
+        with:
+          major_pattern: "/^(breaking|major)//"
+          minor_pattern: "/^(feature|feat|minor)//"
+          use_test_value: "true"
+          test_value: breaking/foo
         id: run
