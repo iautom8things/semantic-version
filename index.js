@@ -6,10 +6,8 @@ const tagPrefix = core.getInput('tag_prefix') || '';
 const namespace = core.getInput('namespace') || '';
 const shortTags = core.getInput('short_tags') === 'true';
 const bumpEachCommit = core.getInput('bump_each_commit') === 'true';
-const rawUseTestValue = core.getInput('use_test_value');
-const useTestValue = rawUseTestValue === 'true';
-core.info("hi1");
-core.info(`rawUseTestValue ${rawUseTestValue} not raw ${useTestValue}`);
+const useTestValue = core.getInput('use_test_value') === 'true';
+const testValue = core.getInput('test_value', { required: true });
 
 const cmd = async (command, ...args) => {
   let output = '', errors = '';
@@ -65,18 +63,13 @@ const setOutput = (major, minor, patch, increment, changed, branch, namespace) =
     core.info('No changes detected for this commit');
   }
 
-  const testValue2 = core.getInput('test_value', { required: true });
-  const rawUseTestValue2 = core.getInput('use_test_value');
-  const useTestValue2 = rawUseTestValue2 === 'true';
-  core.info(`Version is ${major}.${minor}.${patch}+${increment} ... rawUseTestValue ${rawUseTestValue2} not raw ${useTestValue2} :: ${testValue2}`);
-
-  core.info("hi2");
-  core.info(`rawUseTestValue ${rawUseTestValue2} not raw ${useTestValue2} :: ${testValue2}`);
-
+  core.info(`Version is ${major}.${minor}.${patch}+${increment}`);
   if (repository !== undefined && !namespace) {
     core.info(`To create a release for this version, go to https://github.com/${repository}/releases/new?tag=${tag}&target=${branch.split('/').reverse()[0]}`);
   }
 
+  core.setOutput("test_value", testValue);
+  core.setOutput("use_test_value", useTestValue);
   core.setOutput("version", version);
   core.setOutput("major", major.toString());
   core.setOutput("minor", minor.toString());
@@ -132,7 +125,6 @@ async function run() {
     let versionBranch = core.getInput('branch', { required: true });
     const majorPattern = createMatchTest(core.getInput('major_pattern', { required: true }));
     const minorPattern = createMatchTest(core.getInput('minor_pattern', { required: true }));
-    const testValue = core.getInput('test_value', { required: true });
     const changePath = core.getInput('change_path') || '';
 
     const onHead = versionBranch === 'HEAD';
@@ -233,19 +225,15 @@ async function run() {
     }
 
     if (useTestValue) {
-      core.info(`Test Value: ${testValue} -- major pattern ${majorPattern(testValue)} -- minor pattern ${minorPattern(testValue)}`);
       if (majorPattern(testValue)) {
         major++;
         minor = 0;
         patch = 0;
-        core.info(`bump major`)
       } else if (minorPattern(testValue)) {
         minor++;
         patch = 0;
-        core.info(`bump minor`)
       } else {
         patch++;
-        core.info(`bump patch`)
       }
       increment = history.length - 1;
       setOutput(major, minor, patch, increment, changed, versionBranch, namespace);
