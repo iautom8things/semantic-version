@@ -8,6 +8,8 @@ const shortTags = core.getInput('short_tags') === 'true';
 const bumpEachCommit = core.getInput('bump_each_commit') === 'true';
 const rawUseTestValue = core.getInput('use_test_value');
 const useTestValue = rawUseTestValue === 'true';
+core.info("hi1");
+core.info(`rawUseTestValue ${rawUseTestValue} not raw ${useTestValue}`);
 
 const cmd = async (command, ...args) => {
   let output = '', errors = '';
@@ -224,19 +226,19 @@ async function run() {
     }
 
     if (useTestValue) {
-      core.warning(`Test Value: ${testValue} -- major pattern ${majorPattern(testValue)} -- minor pattern ${minorPattern(testValue)}`);
+      core.info(`Test Value: ${testValue} -- major pattern ${majorPattern(testValue)} -- minor pattern ${minorPattern(testValue)}`);
       if (majorPattern(testValue)) {
         major++;
         minor = 0;
         patch = 0;
-        core.warning(`bump major`)
+        core.info(`bump major`)
       } else if (minorPattern(testValue)) {
         minor++;
         patch = 0;
-        core.warning(`bump minor`)
+        core.info(`bump minor`)
       } else {
         patch++;
-        core.warning(`bump patch`)
+        core.info(`bump patch`)
       }
       increment = history.length - 1;
       setOutput(major, minor, patch, increment, changed, versionBranch, namespace);
