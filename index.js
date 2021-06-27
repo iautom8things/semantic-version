@@ -226,19 +226,24 @@ async function run() {
       return;
     }
 
+    core.setOutput("test_value", testValue);
     if (useTestValue) {
       core.warning(`Test Value: ${testValue} -- major pattern ${majorPattern(testValue)} -- minor pattern ${minorPattern(testValue)}`);
       core.info(`Test Value: ${testValue} -- major pattern ${majorPattern(testValue)} -- minor pattern ${minorPattern(testValue)}`);
       core.error(`Test Value: ${testValue} -- major pattern ${majorPattern(testValue)} -- minor pattern ${minorPattern(testValue)}`);
+      core.setOutput("in_use_test_value", true);
       if (majorPattern(testValue)) {
         major++;
         minor = 0;
         patch = 0;
+        core.setOutput("major_true", true);
       } else if (minorPattern(testValue)) {
         minor++;
         patch = 0;
+        core.setOutput("minor_true", true);
       } else {
         patch++;
+        core.setOutput("patch_true", true);
       }
       increment = history.length - 1;
       setOutput(major, minor, patch, increment, changed, versionBranch, namespace);
