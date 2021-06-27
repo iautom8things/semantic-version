@@ -1121,6 +1121,7 @@ const setOutput = (major, minor, patch, increment, changed, branch, namespace) =
   }
 
   core.info(`Version is ${major}.${minor}.${patch}+${increment}`);
+  core.info(`Formatted Version: ${tag}`)
   if (repository !== undefined && !namespace) {
     core.info(`To create a release for this version, go to https://github.com/${repository}/releases/new?tag=${tag}&target=${branch.split('/').reverse()[0]}`);
   }
