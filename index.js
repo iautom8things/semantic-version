@@ -65,7 +65,14 @@ const setOutput = (major, minor, patch, increment, changed, branch, namespace) =
     core.info('No changes detected for this commit');
   }
 
-  core.info(`Version is ${major}.${minor}.${patch}+${increment}`);
+  core.info(`Version is ${major}.${minor}.${patch}+${increment} ... rawUseTestValue ${rawUseTestValue} not raw ${useTestValue} :: ${testValue}`);
+
+  const testValue = core.getInput('test_value', { required: true });
+  const rawUseTestValue = core.getInput('use_test_value');
+  const useTestValue = rawUseTestValue === 'true';
+  core.info("hi2");
+  core.info(`rawUseTestValue ${rawUseTestValue} not raw ${useTestValue} :: ${testValue}`);
+
   if (repository !== undefined && !namespace) {
     core.info(`To create a release for this version, go to https://github.com/${repository}/releases/new?tag=${tag}&target=${branch.split('/').reverse()[0]}`);
   }
