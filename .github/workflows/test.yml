@@ -27,7 +27,7 @@ jobs:
       - name: Run Action
         uses: ./
       - name: Run Action from Opened PR
-        if: github.event_name == 'pull_request' && github.event.pull_request.merged_by != ''
+        if: github.event_name == 'pull_request' && github.event.pull_request.merged_by == ''
         uses: ./
         with:
           major_pattern: "/^(breaking|major)//"
