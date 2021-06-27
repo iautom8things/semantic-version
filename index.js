@@ -75,6 +75,9 @@ const setOutput = (major, minor, patch, increment, changed, branch, namespace) =
   core.setOutput("increment", increment.toString());
   core.setOutput("changed", changed.toString());
   core.setOutput("version_tag", tag);
+  core.setOutput("raw_use_test_value", rawUseTestValue);
+  core.setOutput("use_test_value", useTestValue);
+
 
 };
 
