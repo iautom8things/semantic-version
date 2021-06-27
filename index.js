@@ -8,7 +8,6 @@ const shortTags = core.getInput('short_tags') === 'true';
 const bumpEachCommit = core.getInput('bump_each_commit') === 'true';
 const rawUseTestValue = core.getInput('use_test_value');
 const useTestValue = rawUseTestValue === 'true';
-core.warning(`raw use: ${rawUseTestValue} parsed: ${useTestValue}`)
 
 const cmd = async (command, ...args) => {
   let output = '', errors = '';
@@ -76,9 +75,6 @@ const setOutput = (major, minor, patch, increment, changed, branch, namespace) =
   core.setOutput("increment", increment.toString());
   core.setOutput("changed", changed.toString());
   core.setOutput("version_tag", tag);
-  core.setOutput("raw_use_test_value", rawUseTestValue);
-  core.setOutput("use_test_value", useTestValue);
-
 
 };
 
@@ -227,35 +223,24 @@ async function run() {
       return;
     }
 
-    core.setOutput("test_value", testValue);
     if (useTestValue) {
       core.warning(`Test Value: ${testValue} -- major pattern ${majorPattern(testValue)} -- minor pattern ${minorPattern(testValue)}`);
-      core.info(`Test Value: ${testValue} -- major pattern ${majorPattern(testValue)} -- minor pattern ${minorPattern(testValue)}`);
-      core.error(`Test Value: ${testValue} -- major pattern ${majorPattern(testValue)} -- minor pattern ${minorPattern(testValue)}`);
-      core.setOutput("in_use_test_value", true);
       if (majorPattern(testValue)) {
         major++;
         minor = 0;
         patch = 0;
-        core.setOutput("major_true", true);
         core.warning(`bump major`)
       } else if (minorPattern(testValue)) {
         minor++;
         patch = 0;
-        core.setOutput("minor_true", true);
         core.warning(`bump minor`)
       } else {
         patch++;
-        core.setOutput("patch_true", true);
         core.warning(`bump patch`)
       }
       increment = history.length - 1;
       setOutput(major, minor, patch, increment, changed, versionBranch, namespace);
       return;
-    } else {
-      core.warning(`useTestValue: ${rawUseTestValue} ${useTestValue}`);
-      core.info(`useTestValue: ${rawUseTestValue} ${useTestValue}`);
-      core.error(`useTestValue: ${rawUseTestValue} ${useTestValue}`);
     }
 
     // Discover the change time from the history log by finding the oldest log
