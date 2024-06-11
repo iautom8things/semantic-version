@@ -217,6 +217,8 @@ async function run() {
       }
     }
 
+    core.info(`Changed: ${changed} ${changed.toString()} for ${changePath} [${versionBranch}]`);
+
     let history = log
       .trim()
       .split(eol)
