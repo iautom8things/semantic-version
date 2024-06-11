@@ -4219,11 +4219,29 @@ async function run() {
 
     if (changePath !== '') {
       if (root === '') {
-        const changedFiles = await cmd(`git log --name-only --oneline ${versionBranch} -- ${changePath}`);
+        const command = `git log --name-only --oneline ${versionBranch} -- ${changePath}`;
+        core.info(`No tags found, checking all commits with command: ${command}`);
+        const changedFiles = await cmd(command);
         changed = changedFiles.length > 0;
+        if (changed) {
+          core.info('No changes detected for this commit');
+        } else {
+          core.info('Changes detected for this commit');
+          core.info('Changed files:');
+          core.info(changedFiles);
+        }
       } else {
-        const changedFiles = await cmd(`git diff --name-only ${root}..${versionBranch} -- ${changePath}`);
+        const command = `git diff --name-only ${root}..${versionBranch} -- ${changePath}`;
+        core.info(`Checking changes: ${command}`);
+        const changedFiles = await cmd(command);
         changed = changedFiles.length > 0;
+        if (changed) {
+          core.info('No changes detected for this commit');
+        } else {
+          core.info('Changes detected for this commit');
+          core.info('Changed files:');
+          core.info(changedFiles);
+        }
       }
     }
 
