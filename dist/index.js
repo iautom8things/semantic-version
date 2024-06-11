@@ -4224,11 +4224,11 @@ async function run() {
         const changedFiles = await cmd(command);
         changed = changedFiles.length > 0;
         if (changed) {
-          core.info('No changes detected for this commit');
-        } else {
           core.info('Changes detected for this commit');
           core.info('Changed files:');
           core.info(changedFiles);
+        } else {
+          core.info('No changes detected for this commit');
         }
       } else {
         const command = `git diff --name-only ${root}..${versionBranch} -- ${changePath}`;
@@ -4236,11 +4236,11 @@ async function run() {
         const changedFiles = await cmd(command);
         changed = changedFiles.length > 0;
         if (changed) {
-          core.info('No changes detected for this commit');
-        } else {
           core.info('Changes detected for this commit');
           core.info('Changed files:');
           core.info(changedFiles);
+        } else {
+          core.info('No changes detected for this commit');
         }
       }
     }
